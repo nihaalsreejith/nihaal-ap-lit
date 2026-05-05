@@ -323,7 +323,10 @@ function activeQuestion() {
 }
 
 function normalizeTest(test) {
+  test.sets = test.sets || [];
+  test.frqs = test.frqs || [];
   test.sets.forEach((set, setIndex) => {
+    set.questions = set.questions || [];
     set.questions.forEach((q, qIndex) => {
       q.num = setIndex * 11 + qIndex + 1;
       q.choices = q.choices || {};
@@ -583,6 +586,11 @@ function submitMcq(auto) {
 
 function renderFrq() {
   if (!state.currentTest) { showScreen('home'); return; }
+  if (!state.currentTest.frqs || state.currentTest.frqs.length === 0) {
+    document.getElementById('screen-frq').innerHTML = `<div class="wrap" style="padding-top:40px"><div class="err">The test generation was cut short and FRQ prompts are missing. Please go back and generate a new test.</div><div class="btn-row" style="margin-top:16px"><button class="btn btn-dark" ${buttonAttrs('dark')} onclick="showScreen('home')">← Back to Home</button></div></div>`;
+    wireButtonHovers();
+    return;
+  }
   const frq = state.currentTest.frqs[state.currentFrqTab];
   document.getElementById('screen-frq').innerHTML = `
     <div class="topbar">
