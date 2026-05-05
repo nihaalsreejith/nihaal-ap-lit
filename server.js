@@ -18,10 +18,11 @@ function parseGroqJson(content) {
 }
 
 // ── POST /api/generate-test ──────────────────────────────────────
+// Split into two parallel calls: MCQ sets + FRQs, then combine.
 app.post('/api/generate-test', async (req, res) => {
-  const systemPrompt = `You generate original AP Literature practice test content. Return ONLY valid JSON — no markdown fences, no preamble, nothing else. Every passage must be entirely original fiction you write — no excerpts from any real published work, no real authors, no recognizable characters or plots. Q1 and Q2 passages are original works you create. Q3 is always a literary argument prompt where the student selects their own work of literary merit.`;
+  const sysBase = `You generate original AP Literature practice test content. Return ONLY valid JSON — no markdown fences, no preamble, nothing else. Every passage must be entirely original fiction you write — no excerpts from any real published work, no real authors, no recognizable characters or plots.`;
 
-  const userPrompt = `Generate a complete AP Literature practice test. Return ONLY this JSON:
+  const mcqPrompt = `Generate the 5 MCQ passage sets for an AP Literature practice test. Return ONLY this JSON:
 {
   "sets": [
     {
@@ -39,7 +40,21 @@ app.post('/api/generate-test', async (req, res) => {
         }
       ]
     }
-  ],
+  ]
+}
+
+Requirements:
+- 5 sets total: sets 0 and 2 prose, sets 1 and 3 poetry, set 4 your choice
+- Prose: 400-600 words, 4 paragraphs, tonal shift between paragraphs 2 and 3
+- Poetry: 20-40 lines, contains a volta, grounded in concrete specific imagery
+- Exactly 11 questions per set, numbered 1-55 sequentially across all sets
+- Each stem must reference a specific line, phrase, or image from that passage — not generic
+- Distribute correct answers unevenly across A/B/C/D — never a repeating cycle
+- Distractors must be passage-specific, not generic filler phrases
+- Cover varied types per set: at least 2 tone/attitude, 2 imagery/figurative language, 1 structure/syntax, 1 theme, 1 diction; 4 your choice`;
+
+  const frqPrompt = `Generate the 3 FRQ prompts for an AP Literature practice test. Return ONLY this JSON:
+{
   "frqs": [
     { "kind": "Q1 Poetry Analysis", "passage": "original poem you write — 20-40 lines", "prompt": "specific prompt naming 2 literary elements present in this poem, ending with 'contribute to an interpretation of the poem as a whole.'" },
     { "kind": "Q2 Prose Fiction Analysis", "passage": "original prose passage you write — 400-500 words", "prompt": "specific prompt referencing this passage's situation and at least one literary element, ending with 'contribute to the meaning of the work as a whole.'" },
@@ -48,31 +63,38 @@ app.post('/api/generate-test', async (req, res) => {
 }
 
 Requirements:
-- 5 sets total: sets 0 and 2 prose, sets 1 and 3 poetry, set 4 your choice
-- Prose: 400-600 words, 4 paragraphs, tonal shift between paragraphs 2 and 3
-- Poetry: 20-40 lines, contains a volta, grounded in concrete specific imagery
-- 11 questions per set, numbered 1-55 sequentially across all sets
-- Each stem must reference a specific line, phrase, or image from that passage — not generic
-- Distribute correct answers unevenly across A/B/C/D — never a repeating cycle
-- Distractors must be passage-specific, not generic filler phrases
-- Cover varied types per set: at least 2 tone/attitude, 2 imagery/figurative language, 1 structure/syntax, 1 theme, 1 diction; 4 your choice
-- Q1 and Q2 FRQ passages must be different from the 5 sets
-- Q3 prompt must instruct student to select a work of literary merit of their own choice — never name a specific book`;
+- Q1 passage is an original poem you write — 20-40 lines, contains a volta
+- Q2 passage is original prose fiction you write — 400-500 words
+- Q3 has no passage — prompt must instruct student to select a work of literary merit of their own choice — never name a specific book`;
 
   try {
-    const result = await groq.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt }
-      ],
-      response_format: { type: 'json_object' },
-      max_tokens: 32000,
-      temperature: 0.8
-    });
+    const [mcqResult, frqResult] = await Promise.all([
+      groq.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: sysBase },
+          { role: 'user', content: mcqPrompt }
+        ],
+        response_format: { type: 'json_object' },
+        max_tokens: 8192,
+        temperature: 0.8
+      }),
+      groq.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: sysBase },
+          { role: 'user', content: frqPrompt }
+        ],
+        response_format: { type: 'json_object' },
+        max_tokens: 8192,
+        temperature: 0.8
+      })
+    ]);
 
-    const parsed = parseGroqJson(result.choices[0].message.content);
-    res.json(parsed);
+    const mcqData = parseGroqJson(mcqResult.choices[0].message.content);
+    const frqData = parseGroqJson(frqResult.choices[0].message.content);
+
+    res.json({ sets: mcqData.sets || [], frqs: frqData.frqs || [] });
   } catch (err) {
     console.error('generate-test error:', err.message);
     res.status(500).json({ error: err.message });
