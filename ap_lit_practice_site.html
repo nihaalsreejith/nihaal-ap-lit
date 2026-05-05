@@ -1,0 +1,851 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>nihaal.ai AP Lit Practice</title>
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.app { font-family: 'Inter', sans-serif; background: #f0f0f0; min-height: 100vh; padding: 20px; }
+.screen { display: none; }
+.screen.active { display: block; animation: screenIn 0.2s ease both; }
+@keyframes screenIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.page-title { font-size: 18px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+.page-sub { font-size: 12px; color: #888; margin-bottom: 20px; }
+.test-card { background: #fff; border: 1.5px solid #d0d0d0; border-radius: 12px; padding: 16px 18px; margin-bottom: 10px; }
+.test-pill { display: inline-flex; align-items: center; gap: 8px; background: #1a1a1a; color: #fff; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+.test-pill-dot { width: 7px; height: 7px; border-radius: 50%; background: #1D9E75; }
+.test-meta { font-size: 12px; color: #777; margin-bottom: 14px; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.not-taken { font-size: 12px; color: #bbb; font-style: italic; }
+.results-header { background: #fff; border: 1.5px solid #d0d0d0; border-radius: 12px; padding: 18px; margin-bottom: 14px; }
+.results-title { font-size: 16px; font-weight: 600; color: #1a1a1a; margin-bottom: 12px; }
+.score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.score-box { background: #f4f4f4; border-radius: 8px; padding: 12px; }
+.score-box-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+.score-box-val { font-size: 24px; font-weight: 600; color: #1a1a1a; }
+.predicted { text-align: center; padding: 16px 0 4px; }
+.predicted-label { font-size: 12px; color: #888; margin-bottom: 8px; }
+.predicted-circle { width: 60px; height: 60px; border-radius: 50%; background: #1D9E75; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; color: #fff; margin: 0 auto 8px; }
+.predicted-sub { font-size: 12px; color: #555; line-height: 1.5; }
+.section-label { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.07em; margin: 16px 0 8px; }
+.section-card { background: #fff; border: 1.5px solid #d0d0d0; border-radius: 12px; margin-bottom: 8px; overflow: hidden; }
+.section-card-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; cursor: pointer; }
+.section-left { display: flex; align-items: center; gap: 12px; }
+.section-badge { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.section-name { font-size: 13px; font-weight: 500; color: #1a1a1a; }
+.section-type { font-size: 11px; color: #888; margin-top: 1px; }
+.section-right { display: flex; align-items: center; gap: 10px; }
+.section-score { font-size: 14px; font-weight: 600; }
+.chevron { width: 14px; height: 14px; color: #bbb; transition: transform 0.2s; }
+.chevron.open { transform: rotate(90deg); }
+.section-body { display: none; padding: 0 16px 16px; border-top: 1px solid #f0f0f0; }
+.section-body.open { display: block; }
+.dot-row { display: flex; gap: 5px; margin: 12px 0 10px; }
+.sdot { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; }
+.bar-track { height: 5px; background: #e8e8e8; border-radius: 3px; overflow: hidden; margin-bottom: 14px; }
+.bar-fill { height: 100%; border-radius: 3px; }
+.rubric-item { display: flex; align-items: flex-start; justify-content: space-between; padding: 6px 0; }
+.rubric-label { font-size: 12px; color: #444; flex: 1; padding-right: 12px; line-height: 1.4; }
+.rubric-pts { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.rubric-pip { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+.rubric-fraction { font-size: 11px; font-weight: 600; min-width: 28px; text-align: right; }
+.ai-block { border-top: 1px solid #f0f0f0; padding-top: 12px; margin-top: 4px; }
+.ai-label { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+.ai-dot { width: 5px; height: 5px; border-radius: 50%; display: inline-block; }
+.ai-section { margin-bottom: 10px; }
+.ai-text { font-size: 12px; color: #444; line-height: 1.55; }
+.tag { display: inline-block; font-size: 10px; font-weight: 500; border-radius: 6px; padding: 2px 7px; margin-bottom: 5px; }
+.tag-green { background: #e6f4ea; color: #2e7d32; }
+.tag-amber { background: #fef3c7; color: #92400e; }
+.mcq-section { background: #fff; border: 1.5px solid #d0d0d0; border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; }
+.mcq-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.mcq-title { font-size: 13px; font-weight: 500; color: #1a1a1a; }
+.mcq-score-text { font-size: 13px; font-weight: 600; color: #1D9E75; }
+.q-grid { display: grid; grid-template-columns: repeat(11, 1fr); gap: 4px; }
+.qd { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 600; }
+.qd-c { background: #1D9E75; color: #fff; }
+.qd-w { background: #c62828; color: #fff; }
+.divider { height: 1px; background: #f0f0f0; margin: 10px 0; }
+.overall-ai { background: #fff; border: 1.5px solid #d0d0d0; border-radius: 12px; padding: 16px; margin-top: 4px; }
+.essay-block { display: none; margin-top: 14px; border-top: 1px solid #f0f0f0; padding-top: 14px; }
+.essay-block.open { display: block; }
+.essay-text { font-size: 12px; color: #333; line-height: 1.7; white-space: pre-wrap; }
+body { background: #f0f0f0; }
+button, select, textarea { font: inherit; }
+button { border: 0; cursor: pointer; }
+button:disabled { opacity: 0.62; cursor: default; }
+.wrap { max-width: 1120px; margin: 0 auto; }
+.btn { border-radius: 8px; padding: 8px 16px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; }
+.btn-green { background: #1D9E75; color: #fff; }
+.btn-dark { background: #1a1a1a; color: #fff; }
+.btn-soft { background: #f4f4f4; color: #1a1a1a; border: 1px solid #d0d0d0; }
+.err { color: #c62828; font-size: 12px; line-height: 1.45; margin-top: 10px; }
+.topbar { position: sticky; top: 0; z-index: 20; background: #fff; border-bottom: 1px solid #d0d0d0; padding: 12px 20px; margin: -20px -20px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.top-title { font-size: 13px; font-weight: 500; color: #1a1a1a; }
+.top-sub { font-size: 12px; color: #888; margin-top: 2px; }
+.timer { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 20px; font-weight: 600; color: #1a1a1a; font-variant-numeric: tabular-nums; }
+.timer.amber { color: #f59e0b; }
+.timer.red { color: #c62828; animation: pulse 1s ease infinite; }
+@keyframes pulse { 50% { opacity: 0.45; } }
+.mc-layout { display: grid; grid-template-columns: 55fr 45fr; gap: 12px; height: calc(100vh - 96px); }
+.panel-scroll { min-height: 0; overflow: auto; }
+.pass-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
+.pass-title { font-size: 16px; font-weight: 600; color: #1a1a1a; }
+.pass-type { font-size: 12px; color: #888; text-transform: capitalize; }
+.pass-selector { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #777; }
+.icon-btn { width: 30px; height: 30px; border-radius: 8px; background: #f4f4f4; color: #1a1a1a; border: 1px solid #d0d0d0; }
+.passage { font-size: 14px; line-height: 1.8; color: #222; }
+.poem-line { display: grid; grid-template-columns: 34px 1fr; gap: 10px; }
+.line-no { color: #aaa; text-align: right; font-size: 11px; user-select: none; }
+.para { margin-bottom: 14px; }
+.q-pill { display: inline-flex; background: #1D9E75; color: #fff; border-radius: 999px; padding: 3px 8px; font-size: 10px; font-weight: 600; margin-bottom: 8px; }
+.stem { font-size: 14px; font-weight: 600; color: #1a1a1a; line-height: 1.55; margin-bottom: 12px; }
+.choice { width: 100%; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; background: #f4f4f4; color: #1a1a1a; display: flex; align-items: flex-start; gap: 10px; text-align: left; border: 1.5px solid transparent; }
+.choice.selected { background: #1a1a1a; color: #fff; }
+.choice.correct { background: #1D9E75; color: #fff; }
+.choice.wrong { background: #c62828; color: #fff; }
+.choice.correct-unselected { background: #1D9E75; color: #fff; border-style: dashed; border-color: #fff; }
+.choice-mark { margin-left: auto; font-weight: 600; }
+.flag { background: transparent; color: #1D9E75; font-size: 25px; line-height: 1; }
+.q-nav { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
+.progress-track { height: 5px; background: #e8e8e8; border-radius: 3px; overflow: hidden; margin: 14px 0 8px; }
+.progress-fill { height: 100%; background: #1D9E75; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.42); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
+.modal.open { display: flex; }
+.modal-card { width: min(420px, 100%); background: #fff; border: 1.5px solid #d0d0d0; border-radius: 12px; padding: 18px; }
+.modal-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #1a1a1a; }
+.modal-text { font-size: 12px; color: #555; line-height: 1.6; margin-bottom: 16px; }
+.frq-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.tab { border-radius: 20px; padding: 7px 14px; background: #f4f4f4; color: #1a1a1a; font-size: 12px; font-weight: 600; border: 1px solid #d0d0d0; }
+.tab.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+.frq-passage { background:#f4f4f4; border-radius:8px; padding:14px; font-size:13px; line-height:1.8; margin: 12px 0; }
+.frq-passage.scrollbox { max-height:240px; overflow-y:auto; }
+.prompt-box { border-left: 3px solid #1D9E75; background:#f9f9f9; padding:12px 14px; font-size:13px; line-height:1.65; margin: 12px 0; }
+.rubric-toggle { font-size: 12px; color: #1a1a1a; background: #f4f4f4; border: 1px solid #d0d0d0; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; }
+.rubric-box { display: none; background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; }
+.rubric-box.open { display: block; }
+.rubric-box p { font-size: 12px; color: #444; line-height: 1.5; margin-bottom: 6px; }
+.essay-input { width: 100%; min-height:240px; background:#f4f4f4; border:1.5px solid #d0d0d0; border-radius:8px; padding:12px; font-size:13px; line-height: 1.6; color: #1a1a1a; resize: vertical; }
+.char-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 8px; font-size: 12px; color: #888; }
+.toast { position: fixed; right: 18px; bottom: 18px; background: #1a1a1a; color: #fff; border-radius: 8px; padding: 10px 14px; font-size: 12px; display: none; z-index: 120; }
+.toast.show { display: block; animation: toastOut 2s ease both; }
+@keyframes toastOut { 0%, 70% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(6px); } }
+.loading { font-size: 12px; color: #777; margin-top: 10px; }
+.dots::after { content: ''; animation: dots 1.2s steps(4, end) infinite; }
+@keyframes dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75%, 100% { content: '...'; } }
+.full { grid-column: 1 / -1; }
+.practice-track { height: 6px; background: #e8e8e8; border-radius: 4px; overflow: hidden; margin: 8px 0 6px; }
+.practice-fill { height: 100%; background: #1D9E75; border-radius: 4px; }
+@media (max-width: 767px) {
+  .app { padding: 14px; }
+  .topbar { margin: -14px -14px 14px; padding: 10px 14px; align-items: flex-start; }
+  .mc-layout { display: block; height: auto; }
+  .panel-scroll { overflow: visible; }
+  .score-grid { grid-template-columns: 1fr; }
+  .q-grid { grid-template-columns: repeat(6, 1fr); }
+  .topbar .btn { padding: 7px 10px; }
+}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section id="screen-home" class="screen active"></section>
+    <section id="screen-mcq" class="screen"></section>
+    <section id="screen-frq" class="screen"></section>
+    <section id="screen-results" class="screen"></section>
+  </div>
+  <div id="modal" class="modal"></div>
+  <div id="toast" class="toast">Saved ✓</div>
+  <script>
+const screens = ['home', 'mcq', 'frq', 'results'];
+const state = {
+  screen: 'home',
+  generating: false,
+  grading: false,
+  generationError: '',
+  currentTest: null,
+  mcqAnswers: {},
+  mcqFlags: {},
+  mcqSubmitted: false,
+  mcqScore: 0,
+  mcqTimeRemaining: 3600,
+  mcqTimerHandle: null,
+  frqAnswers: { 0:'', 1:'', 2:'' },
+  frqSubmitted: { 0:false, 1:false, 2:false },
+  frqTimeRemaining: 7200,
+  frqTimerHandle: null,
+  currentSet: 0,
+  currentQuestion: 0,
+  currentFrqTab: 0,
+  results: null,
+  scoreData: null,
+  currentAttemptId: null,
+  gradingError: '',
+  openSections: { 0: true },
+  openEssays: {},
+  rubricOpen: {},
+};
+
+function scoreColor(n, max) {
+  const r = n / max;
+  if (n === 0) return { bg:'#fca5a5', text:'#7f1d1d', bar:'#ef4444' };
+  if (n === 1 && max > 2) return { bg:'#fca5a5', text:'#7f1d1d', bar:'#ef4444' };
+  if (r <= 0.5) return { bg:'#fde68a', text:'#78350f', bar:'#f59e0b' };
+  if (r < 1) return { bg:'#bbf7d0', text:'#14532d', bar:'#6ab04c' };
+  return { bg:'#1D9E75', text:'#fff', bar:'#1D9E75' };
+}
+
+function escapeHtml(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+  }[ch]));
+}
+
+function getAttempts() {
+  try { return JSON.parse(localStorage.getItem('nihaalAttempts') || '[]'); }
+  catch (err) { console.error('Could not parse attempts', err); return []; }
+}
+
+function saveAttempts(attempts) {
+  localStorage.setItem('nihaalAttempts', JSON.stringify(attempts));
+}
+
+function saveDraft() {
+  localStorage.setItem('nihaalDraft', JSON.stringify({
+    currentAttemptId: state.currentAttemptId,
+    currentTest: state.currentTest,
+    frqAnswers: state.frqAnswers,
+    frqSubmitted: state.frqSubmitted,
+    savedAt: new Date().toISOString()
+  }));
+}
+
+function loadDraft() {
+  try {
+    const draft = JSON.parse(localStorage.getItem('nihaalDraft') || 'null');
+    if (draft && draft.frqAnswers) {
+      state.frqAnswers = Object.assign({ 0:'', 1:'', 2:'' }, draft.frqAnswers);
+      state.frqSubmitted = Object.assign({ 0:false, 1:false, 2:false }, draft.frqSubmitted || {});
+    }
+  } catch (err) {
+    console.error('Could not load draft', err);
+  }
+}
+
+function buttonAttrs(kind) {
+  const bg = kind === 'green' ? '#1D9E75' : kind === 'soft' ? '#f4f4f4' : '#1a1a1a';
+  const fg = kind === 'soft' ? '#1a1a1a' : '#fff';
+  const enterBg = kind === 'green' ? '#178861' : kind === 'soft' ? '#e8e8e8' : '#333';
+  return `onmouseenter="this.style.background='${enterBg}'" onmouseleave="this.style.background='${bg}'" style="background:${bg};color:${fg}"`;
+}
+
+function showScreen(name) {
+  pauseTimers();
+  state.screen = name;
+  screens.forEach(screen => {
+    document.getElementById('screen-' + screen).classList.toggle('active', screen === name);
+  });
+  render();
+  if (name === 'mcq' && !state.mcqSubmitted) startMcqTimer();
+  if (name === 'frq' && !allFrqsSubmitted() && !state.grading) startFrqTimer();
+}
+
+function pauseTimers() {
+  clearInterval(state.mcqTimerHandle);
+  clearInterval(state.frqTimerHandle);
+  state.mcqTimerHandle = null;
+  state.frqTimerHandle = null;
+}
+
+function formatMcqTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+function formatFrqTime(sec) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  return h + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+function timerClass(sec, amberAt, redAt) {
+  return sec <= redAt ? 'timer red' : sec <= amberAt ? 'timer amber' : 'timer';
+}
+
+function startMcqTimer() {
+  updateTimerText();
+  state.mcqTimerHandle = setInterval(() => {
+    state.mcqTimeRemaining = Math.max(0, state.mcqTimeRemaining - 1);
+    updateTimerText();
+    if (state.mcqTimeRemaining === 0) {
+      clearInterval(state.mcqTimerHandle);
+      submitMcq(true);
+    }
+  }, 1000);
+}
+
+function startFrqTimer() {
+  updateTimerText();
+  state.frqTimerHandle = setInterval(() => {
+    state.frqTimeRemaining = Math.max(0, state.frqTimeRemaining - 1);
+    updateTimerText();
+    if (state.frqTimeRemaining === 0) {
+      clearInterval(state.frqTimerHandle);
+      submitAllFrq(true);
+    }
+  }, 1000);
+}
+
+function updateTimerText() {
+  const mcqTimer = document.getElementById('mcq-timer');
+  if (mcqTimer) {
+    mcqTimer.textContent = formatMcqTime(state.mcqTimeRemaining);
+    mcqTimer.className = timerClass(state.mcqTimeRemaining, 600, 300);
+  }
+  const frqTimer = document.getElementById('frq-timer');
+  if (frqTimer) {
+    frqTimer.textContent = formatFrqTime(state.frqTimeRemaining);
+    frqTimer.className = timerClass(state.frqTimeRemaining, 1200, 600);
+  }
+}
+
+function allQuestions() {
+  return state.currentTest ? state.currentTest.sets.flatMap(set => set.questions) : [];
+}
+
+function activeQuestion() {
+  const set = state.currentTest.sets[state.currentSet];
+  return set.questions[state.currentQuestion];
+}
+
+function normalizeTest(test) {
+  test.sets.forEach((set, setIndex) => {
+    set.questions.forEach((q, qIndex) => {
+      q.num = setIndex * 11 + qIndex + 1;
+      q.choices = q.choices || {};
+      q.distractors = q.distractors || {};
+    });
+  });
+  return test;
+}
+
+async function groqCall(endpoint, payload) {
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!response.ok) {
+    const err = await response.text();
+    console.error('API error:', response.status, err);
+    throw new Error(`API error ${response.status}`);
+  }
+  return await response.json();
+}
+
+async function generateTest() {
+  state.generationError = '';
+  state.generating = true;
+  renderHome();
+  try {
+    const parsed = await groqCall('/api/generate-test', {});
+    state.currentTest = normalizeTest(parsed);
+    state.mcqAnswers = {};
+    state.mcqFlags = {};
+    state.mcqSubmitted = false;
+    state.mcqScore = 0;
+    state.mcqTimeRemaining = 3600;
+    state.frqAnswers = { 0:'', 1:'', 2:'' };
+    state.frqSubmitted = { 0:false, 1:false, 2:false };
+    state.frqTimeRemaining = 7200;
+    state.currentSet = 0;
+    state.currentQuestion = 0;
+    state.currentFrqTab = 0;
+    state.results = null;
+    state.scoreData = null;
+    state.currentAttemptId = Date.now();
+    localStorage.removeItem('nihaalDraft');
+    showScreen('mcq');
+  } catch (err) {
+    console.error('Generation failed', err);
+    state.generationError = err.message || 'Generation failed. Please try again.';
+    showScreen('home');
+  } finally {
+    state.generating = false;
+    renderHome();
+  }
+}
+
+function renderHome() {
+  const attempts = getAttempts().slice().sort((a, b) => b.createdAt - a.createdAt);
+  document.getElementById('screen-home').innerHTML = `
+    <div class="wrap">
+      <div class="page-title">AP Lit &amp; Composition</div>
+      <div class="page-sub">Mock Exam Library</div>
+      <div class="test-card" style="border-left:3px solid #1D9E75">
+        <div class="test-pill"><span class="test-pill-dot"></span>New Practice Test</div>
+        <div class="test-meta">AI-generated · Unique every time · 55 MCQ + 3 FRQ</div>
+        <div class="btn-row">
+          <button class="btn btn-green" ${buttonAttrs('green')} ${state.generating ? 'disabled' : ''} onclick="generateTest()">${state.generating ? '<span class="dots">Generating your test</span>' : 'Generate &amp; Start Test'}</button>
+        </div>
+        ${state.generationError ? `<div class="err">${escapeHtml(state.generationError)}</div>` : ''}
+      </div>
+      <div class="section-label">Past Attempts</div>
+      ${attempts.length ? attempts.map(attemptCard).join('') : '<div class="test-card"><div class="not-taken">No tests taken yet.</div></div>'}
+    </div>`;
+  wireButtonHovers();
+}
+
+function attemptCard(attempt) {
+  const date = new Date(attempt.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  return `
+    <div class="test-card">
+      <div class="test-pill"><span class="test-pill-dot"></span>Mock Test ${attempt.number}</div>
+      <div class="test-meta">${escapeHtml(date)} · MCQ ${attempt.mcqScore}/55 · predicted AP score ${attempt.ap}</div>
+      <div class="btn-row">
+        <button class="btn btn-green" ${buttonAttrs('green')} onclick="viewAttempt(${attempt.id})">See Results</button>
+        <button class="btn btn-dark" ${buttonAttrs('dark')} onclick="retakeAttempt(${attempt.id})">Retake</button>
+      </div>
+    </div>`;
+}
+
+function viewAttempt(id) {
+  const attempt = getAttempts().find(item => item.id === id);
+  if (!attempt) return;
+  state.currentTest = attempt.test;
+  state.mcqAnswers = attempt.mcqAnswers || {};
+  state.mcqScore = attempt.mcqScore || 0;
+  state.frqAnswers = attempt.frqAnswers || { 0:'', 1:'', 2:'' };
+  state.results = attempt.results;
+  state.scoreData = attempt.scoreData || (attempt.results ? {
+    frqTotal: attempt.results.frqTotal,
+    mcqWeighted: attempt.results.mcqWeighted,
+    frqWeighted: attempt.results.frqWeighted,
+    weightedTotal: attempt.results.weightedTotal,
+    ap: attempt.results.ap,
+    percentile: attempt.results.percentile
+  } : null);
+  state.currentAttemptId = attempt.id;
+  state.mcqSubmitted = true;
+  showScreen('results');
+}
+
+function retakeAttempt(id) {
+  const attempt = getAttempts().find(item => item.id === id);
+  if (!attempt) return;
+  state.currentTest = attempt.test;
+  state.mcqAnswers = {};
+  state.mcqFlags = {};
+  state.mcqSubmitted = false;
+  state.mcqScore = 0;
+  state.mcqTimeRemaining = 3600;
+  state.frqAnswers = { 0:'', 1:'', 2:'' };
+  state.frqSubmitted = { 0:false, 1:false, 2:false };
+  state.frqTimeRemaining = 7200;
+  state.currentSet = 0;
+  state.currentQuestion = 0;
+  state.results = null;
+  state.scoreData = null;
+  state.currentAttemptId = Date.now();
+  showScreen('mcq');
+}
+
+function renderMcq() {
+  if (!state.currentTest) { showScreen('home'); return; }
+  const set = state.currentTest.sets[state.currentSet];
+  const question = activeQuestion();
+  const answeredCount = Object.keys(state.mcqAnswers).length;
+  document.getElementById('screen-mcq').innerHTML = `
+    <div class="topbar">
+      <div>
+        <div class="top-title">Section I · Multiple Choice</div>
+        <div class="top-sub">Q${question.num} of 55</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div id="mcq-timer" class="${timerClass(state.mcqTimeRemaining, 600, 300)}">${formatMcqTime(state.mcqTimeRemaining)}</div>
+        <button class="btn btn-dark" ${buttonAttrs('dark')} onclick="openSubmitModal()">Submit MCQ</button>
+      </div>
+    </div>
+    <div class="wrap mc-layout">
+      <div class="test-card panel-scroll">
+        <div class="pass-head">
+          <div>
+            <div class="pass-title">${escapeHtml(set.title || 'Untitled Passage')}</div>
+            <div class="pass-type">${escapeHtml(set.type || '')}</div>
+          </div>
+          <div class="pass-selector">
+            <button class="icon-btn" ${buttonAttrs('soft')} onclick="changeSet(-1)" title="Previous passage">←</button>
+            <span>Passage ${state.currentSet + 1} of ${state.currentTest.sets.length}</span>
+            <button class="icon-btn" ${buttonAttrs('soft')} onclick="changeSet(1)" title="Next passage">→</button>
+          </div>
+        </div>
+        ${passageHtml(set)}
+      </div>
+      <div class="test-card panel-scroll">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+          <div>
+            <div class="q-pill">Q${question.num}</div>
+            <div class="stem">${escapeHtml(question.stem)}</div>
+          </div>
+          <button class="flag" onclick="toggleFlag(${question.num})" title="Flag question">${state.mcqFlags[question.num] ? '★' : '☆'}</button>
+        </div>
+        <div>${['A','B','C','D'].map(letter => choiceHtml(question, letter)).join('')}</div>
+        ${state.mcqSubmitted ? `<div class="ai-block"><div class="ai-label"><span class="ai-dot" style="background:#1D9E75"></span>nihaal.ai breakdown</div><div class="ai-text"><b>Correct answer: ${escapeHtml(question.correct)}.</b> ${escapeHtml(question.explanation || '')}</div></div>` : ''}
+        <div class="progress-track"><div class="progress-fill" style="width:${answeredCount / 55 * 100}%"></div></div>
+        <div class="test-meta">${answeredCount} / 55 answered</div>
+        <div class="q-nav">
+          <button class="btn btn-soft" ${buttonAttrs('soft')} onclick="prevQuestion()">Prev</button>
+          <button class="btn btn-soft" ${buttonAttrs('soft')} onclick="nextQuestion()">Next</button>
+          <select onchange="jumpQuestion(Number(this.value))">${allQuestions().map(q => `<option value="${q.num}" ${q.num === question.num ? 'selected' : ''}>${state.mcqFlags[q.num] ? '★' : state.mcqAnswers[q.num] ? '●' : '○'} Q${q.num}</option>`).join('')}</select>
+        </div>
+      </div>
+    </div>`;
+  wireButtonHovers();
+}
+
+function passageHtml(set) {
+  if ((set.type || '').toLowerCase().includes('poetry')) {
+    return `<div class="passage">${escapeHtml(set.text).split('\n').map((line, index) => `<div class="poem-line"><span class="line-no">${index + 1}</span><span>${line || '&nbsp;'}</span></div>`).join('')}</div>`;
+  }
+  return `<div class="passage">${escapeHtml(set.text).split('\n\n').map((para, index) => `<p class="para"><span class="line-no" style="display:inline-block;width:28px">${index + 1}</span>${para}</p>`).join('')}</div>`;
+}
+
+function choiceHtml(question, letter) {
+  const selected = state.mcqAnswers[question.num] === letter;
+  let cls = 'choice';
+  let mark = '';
+  if (!state.mcqSubmitted && selected) cls += ' selected';
+  if (state.mcqSubmitted) {
+    if (letter === question.correct) { cls += selected ? ' correct' : ' correct-unselected'; mark = '✓'; }
+    if (selected && letter !== question.correct) { cls += ' wrong'; mark = '✗'; }
+  }
+  return `<button class="${cls}" onclick="selectAnswer(${question.num}, '${letter}')"><b>${letter}.</b><span>${escapeHtml(question.choices[letter] || '')}</span><span class="choice-mark">${mark}</span></button>`;
+}
+
+function selectAnswer(num, letter) {
+  if (state.mcqSubmitted) return;
+  state.mcqAnswers[num] = letter;
+  renderMcq();
+}
+
+function toggleFlag(num) {
+  state.mcqFlags[num] = !state.mcqFlags[num];
+  renderMcq();
+}
+
+function changeSet(delta) {
+  const next = Math.max(0, Math.min(state.currentTest.sets.length - 1, state.currentSet + delta));
+  state.currentSet = next;
+  state.currentQuestion = 0;
+  renderMcq();
+}
+
+function prevQuestion() {
+  if (state.currentQuestion > 0) state.currentQuestion -= 1;
+  else if (state.currentSet > 0) { state.currentSet -= 1; state.currentQuestion = state.currentTest.sets[state.currentSet].questions.length - 1; }
+  renderMcq();
+}
+
+function nextQuestion() {
+  const set = state.currentTest.sets[state.currentSet];
+  if (state.currentQuestion < set.questions.length - 1) state.currentQuestion += 1;
+  else if (state.currentSet < state.currentTest.sets.length - 1) { state.currentSet += 1; state.currentQuestion = 0; }
+  renderMcq();
+}
+
+function jumpQuestion(num) {
+  state.currentTest.sets.forEach((set, setIndex) => {
+    set.questions.forEach((q, qIndex) => {
+      if (q.num === num) { state.currentSet = setIndex; state.currentQuestion = qIndex; }
+    });
+  });
+  renderMcq();
+}
+
+function openSubmitModal() {
+  const unanswered = 55 - Object.keys(state.mcqAnswers).length;
+  showModal('Submit MCQ?', `${unanswered} questions unanswered. Submit anyway?`, [
+    ['Submit', 'green', () => { hideModal(); submitMcq(false); }],
+    ['Go Back', 'soft', hideModal]
+  ]);
+}
+
+function submitMcq(auto) {
+  state.mcqSubmitted = true;
+  state.mcqScore = allQuestions().filter(q => state.mcqAnswers[q.num] === q.correct).length;
+  if (auto) console.log('MCQ auto-submitted at 0:00');
+  showScreen('frq');
+}
+
+function renderFrq() {
+  if (!state.currentTest) { showScreen('home'); return; }
+  const frq = state.currentTest.frqs[state.currentFrqTab];
+  document.getElementById('screen-frq').innerHTML = `
+    <div class="topbar">
+      <div>
+        <div class="top-title">Section II · Free Response</div>
+        <div class="top-sub">Suggested: ~40 min per essay</div>
+      </div>
+      <div id="frq-timer" class="${timerClass(state.frqTimeRemaining, 1200, 600)}">${formatFrqTime(state.frqTimeRemaining)}</div>
+    </div>
+    <div class="wrap">
+      <div class="frq-tabs">${state.currentTest.frqs.map((item, index) => `<button class="tab ${state.currentFrqTab === index ? 'active' : ''}" onclick="state.currentFrqTab=${index};renderFrq()">Q${index + 1}</button>`).join('')}</div>
+      <div class="test-card">
+        <div class="pass-head">
+          <div>
+            <div class="pass-title">Question ${state.currentFrqTab + 1} — ${escapeHtml(frq.kind.replace(/^Q\d+\s*/, ''))}</div>
+            <div class="pass-type">${state.frqSubmitted[state.currentFrqTab] ? 'Submitted' : 'Free response'}</div>
+          </div>
+          <button class="btn btn-green" ${buttonAttrs('green')} onclick="submitOneFrq(${state.currentFrqTab})">Submit Question</button>
+        </div>
+        ${frq.passage ? `<div class="frq-passage ${state.currentFrqTab === 1 ? 'scrollbox' : ''}">${passageHtml({ type: state.currentFrqTab === 0 ? 'poetry' : 'prose', text: frq.passage })}</div>` : ''}
+        <div class="prompt-box">${escapeHtml(frq.prompt)}</div>
+        <button class="rubric-toggle" onclick="toggleRubric(${state.currentFrqTab})">Rubric: Row A Thesis 0-1 / Row B Evidence &amp; Commentary 0-4 / Row C Sophistication 0-1</button>
+        <div class="rubric-box ${state.rubricOpen[state.currentFrqTab] ? 'open' : ''}">
+          <p><b>Row A:</b> Award 1 point for a defensible, specific interpretation that requires textual defense.</p>
+          <p><b>Row B:</b> Award 0-4 points for evidence and commentary, with higher scores requiring specific evidence and a sustained line of reasoning.</p>
+          <p><b>Row C:</b> Award 1 point only for sustained complexity, broader context, alternatives, or vivid persuasive style.</p>
+        </div>
+        <textarea class="essay-input" oninput="updateFrqAnswer(${state.currentFrqTab}, this.value)" placeholder="Begin your essay here...">${escapeHtml(state.frqAnswers[state.currentFrqTab] || '')}</textarea>
+        <div class="char-row">
+          <span>${(state.frqAnswers[state.currentFrqTab] || '').length} characters</span>
+          <span>${state.frqSubmitted[state.currentFrqTab] ? 'Submitted' : 'Drafting'}</span>
+        </div>
+      </div>
+      <div class="btn-row" style="justify-content:flex-end;margin-top:12px">
+        <button class="btn btn-dark" ${buttonAttrs('dark')} onclick="submitAllFrq(false)">Submit All</button>
+      </div>
+    </div>`;
+  wireButtonHovers();
+}
+
+function toggleRubric(index) {
+  state.rubricOpen[index] = !state.rubricOpen[index];
+  renderFrq();
+}
+
+function updateFrqAnswer(index, value) {
+  state.frqAnswers[index] = value;
+  saveDraft();
+  const row = document.querySelector('.char-row span');
+  if (row) row.textContent = value.length + ' characters';
+}
+
+async function submitOneFrq(index) {
+  state.frqSubmitted[index] = true;
+  saveDraft();
+  if (allFrqsSubmitted()) {
+    await gradeFrqs();
+  } else {
+    renderFrq();
+  }
+}
+
+function allFrqsSubmitted() {
+  return [0,1,2].every(index => state.frqSubmitted[index]);
+}
+
+async function submitAllFrq(auto) {
+  [0,1,2].forEach(index => state.frqSubmitted[index] = true);
+  saveDraft();
+  if (auto) console.log('FRQ auto-submitted at 0:00');
+  await gradeFrqs();
+}
+
+async function gradeFrqs() {
+  state.grading = true;
+  state.gradingError = '';
+  showScreen('results');
+  try {
+    const graded = await groqCall('/api/grade-frqs', {
+      mcqScore: state.mcqScore,
+      frqs: state.currentTest.frqs,
+      frqAnswers: state.frqAnswers
+    });
+    state.results = buildResults(graded, false);
+    saveCurrentAttempt();
+  } catch (err) {
+    console.error('Grading failed', err);
+    state.gradingError = 'AI grading unavailable — essays saved';
+    state.results = buildResults(null, true);
+    saveCurrentAttempt();
+  } finally {
+    state.grading = false;
+    showScreen('results');
+  }
+}
+
+function buildResults(graded, unavailable) {
+  const fallbackQ = { row_a:{ score:0, justification:'AI grading unavailable.' }, row_b:{ score:0, justification:'AI grading unavailable.' }, row_c:{ score:0, justification:'AI grading unavailable.' }, total:0, strengths:'AI grading unavailable — essays saved.', areas:'Paste an API key and resubmit for rubric feedback.' };
+  const g = graded || { q1:fallbackQ, q2:fallbackQ, q3:fallbackQ, mcq_analysis:'AI grading unavailable — essays saved.', overall_strengths:'AI grading unavailable — essays saved.', overall_focus:'Essay responses were preserved in this browser.', readiness_pct:0 };
+  const frqTotal = Number(g.q1.total || 0) + Number(g.q2.total || 0) + Number(g.q3.total || 0);
+  const mcqWeighted = Math.round(state.mcqScore / 55 * 67.5 * 10) / 10;
+  const frqWeighted = Math.round(frqTotal / 18 * 82.5 * 10) / 10;
+  const weightedTotal = Math.round(mcqWeighted + frqWeighted);
+  const ap = weightedTotal >= 135 ? 5 : weightedTotal >= 112 ? 4 : weightedTotal >= 80 ? 3 : weightedTotal >= 50 ? 2 : 1;
+  const percentile = { 5:'~97th', 4:'~75th', 3:'~50th', 2:'~25th', 1:'~10th' }[ap];
+  state.scoreData = { frqTotal, mcqWeighted, frqWeighted, weightedTotal, ap, percentile };
+  return { graded: g, unavailable, frqTotal, mcqWeighted, frqWeighted, weightedTotal, ap, percentile };
+}
+
+function saveCurrentAttempt() {
+  const attempts = getAttempts();
+  const existing = attempts.findIndex(item => item.id === state.currentAttemptId);
+  const attempt = {
+    id: state.currentAttemptId || Date.now(),
+    number: existing >= 0 ? attempts[existing].number : attempts.length + 1,
+    createdAt: Date.now(),
+    date: new Date().toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }),
+    test: state.currentTest,
+    testData: state.currentTest,
+    mcqAnswers: state.mcqAnswers,
+    mcqScore: state.mcqScore,
+    frqAnswers: state.frqAnswers,
+    results: state.results,
+    scoreData: state.scoreData,
+    ap: state.results.ap
+  };
+  if (existing >= 0) attempts[existing] = attempt;
+  else attempts.push(attempt);
+  state.currentAttemptId = attempt.id;
+  saveAttempts(attempts);
+}
+
+function renderResults() {
+  const el = document.getElementById('screen-results');
+  if (state.grading) {
+    el.innerHTML = `<div class="wrap"><button class="btn btn-dark" ${buttonAttrs('dark')} onclick="showScreen('frq')">← Mock Test</button><div class="results-header" style="margin-top:12px"><div class="results-title">Results</div><div class="loading"><span class="dots">Grading essays with nihaal.ai</span></div></div></div>`;
+    wireButtonHovers();
+    return;
+  }
+  if (!state.results) { el.innerHTML = ''; return; }
+  const r = state.results;
+  const attempt = getAttempts().find(item => item.id === state.currentAttemptId);
+  const number = attempt ? attempt.number : '';
+  el.innerHTML = `
+    <div class="wrap">
+      <button class="btn btn-dark" ${buttonAttrs('dark')} onclick="showScreen('home')">← Mock Test ${number}</button>
+      <div class="results-header" style="margin-top:12px">
+        <div class="results-title">Results</div>
+        <div class="score-grid">
+          <div class="score-box"><div class="score-box-label">MCQ Score</div><div class="score-box-val">${state.mcqScore}/55</div></div>
+          <div class="score-box"><div class="score-box-label">FRQ Score</div><div class="score-box-val">${r.frqTotal}/18</div></div>
+          <div class="score-box full"><div class="score-box-label">Weighted Score</div><div class="score-box-val">${r.weightedTotal} / 150</div></div>
+        </div>
+        <div class="divider"></div>
+        <div class="predicted"><div class="predicted-label">Predicted AP Score</div><div class="predicted-circle">${r.ap}</div><div class="predicted-sub">${r.percentile} percentile estimate · MCQ ${r.mcqWeighted}/67.5 + FRQ ${r.frqWeighted}/82.5</div></div>
+      </div>
+      ${mcqBreakdownHtml()}
+      <div class="section-label">FRQ Breakdown</div>
+      ${[0,1,2].map(frqResultHtml).join('')}
+      ${overallHtml()}
+    </div>`;
+  wireButtonHovers();
+}
+
+function mcqBreakdownHtml() {
+  const questions = allQuestions();
+  return `<div class="mcq-section">
+    <div class="mcq-header"><div class="mcq-title">MCQ Breakdown</div><div class="mcq-score-text">${state.mcqScore}/55</div></div>
+    <div class="q-grid">${questions.map(q => `<div class="qd ${state.mcqAnswers[q.num] === q.correct ? 'qd-c' : 'qd-w'}">${q.num}</div>`).join('')}</div>
+    <div class="ai-block"><div class="ai-label"><span class="ai-dot" style="background:#1D9E75"></span>nihaal.ai breakdown</div><div class="ai-text">${escapeHtml(state.results.graded.mcq_analysis)}</div></div>
+  </div>`;
+}
+
+function frqResultHtml(index) {
+  const key = 'q' + (index + 1);
+  const item = state.results.graded[key];
+  const color = scoreColor(item.total, 6);
+  const open = state.openSections[index];
+  const essayOpen = state.openEssays[index];
+  const names = ['Poetry Analysis', 'Prose Fiction Analysis', 'Literary Argument'];
+  return `<div class="section-card">
+    <div class="section-card-header" onclick="state.openSections[${index}]=!state.openSections[${index}];renderResults()">
+      <div class="section-left">
+        <div class="section-badge" style="background:${color.bg};color:${color.text}">Q${index + 1}</div>
+        <div><div class="section-name">Question ${index + 1}</div><div class="section-type">${names[index]}</div></div>
+      </div>
+      <div class="section-right"><div class="section-score" style="color:${color.bar}">${item.total}/6</div><div class="chevron ${open ? 'open' : ''}">›</div></div>
+    </div>
+    <div class="section-body ${open ? 'open' : ''}">
+      <div class="dot-row">${Array.from({ length: 6 }, (_, i) => `<span class="sdot" style="background:${i < item.total ? color.bg : '#e8e8e8'};color:${i < item.total ? color.text : '#aaa'}">${i + 1}</span>`).join('')}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${item.total / 6 * 100}%;background:${color.bar}"></div></div>
+      ${rubricResultRow('Thesis', item.row_a.score, 1)}
+      ${rubricResultRow('Evidence & Commentary', item.row_b.score, 4)}
+      ${rubricResultRow('Sophistication', item.row_c.score, 1)}
+      <div class="ai-block">
+        <div class="ai-label"><span class="ai-dot" style="background:${color.bar}"></span>nihaal.ai breakdown</div>
+        <div class="ai-section"><span class="tag tag-green">Strengths</span><div class="ai-text">${escapeHtml(item.strengths)}</div></div>
+        <div class="ai-section"><span class="tag tag-amber">Areas to Watch</span><div class="ai-text">${escapeHtml(item.areas)}</div></div>
+        <button class="btn btn-soft" ${buttonAttrs('soft')} onclick="event.stopPropagation();state.openEssays[${index}]=!state.openEssays[${index}];renderResults()">${essayOpen ? 'Hide essay' : 'See essay'}</button>
+        <div class="essay-block ${essayOpen ? 'open' : ''}"><div class="essay-text">${escapeHtml(state.frqAnswers[index] || '[no response]')}</div></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function rubricResultRow(label, score, max) {
+  const color = scoreColor(score, max);
+  return `<div class="rubric-item"><div class="rubric-label">${label}</div><div class="rubric-pts">${Array.from({ length: max }, (_, i) => `<span class="rubric-pip" style="background:${i < score ? color.bar : '#e8e8e8'}"></span>`).join('')}<span class="rubric-fraction">${score}/${max}</span></div></div>`;
+}
+
+function overallHtml() {
+  const g = state.results.graded;
+  const pct = Math.max(0, Math.min(100, Number(g.readiness_pct || 0)));
+  return `<div class="overall-ai">
+    <div class="ai-label"><span class="ai-dot" style="background:#1D9E75"></span>nihaal.ai breakdown</div>
+    <div class="ai-section"><span class="tag tag-green">Overall Strengths</span><div class="ai-text">${escapeHtml(g.overall_strengths)}</div></div>
+    <div class="ai-section"><span class="tag ${pct >= 70 ? 'tag-green' : 'tag-amber'}">Practice Needed</span><div class="practice-track"><div class="practice-fill" style="width:${pct}%"></div></div><div class="ai-text">${pct}% readiness · ${escapeHtml(g.overall_focus)}</div></div>
+  </div>`;
+}
+
+function showModal(title, text, buttons) {
+  const modal = document.getElementById('modal');
+  modal.className = 'modal open';
+  modal.innerHTML = `<div class="modal-card"><div class="modal-title">${escapeHtml(title)}</div><div class="modal-text">${escapeHtml(text)}</div><div class="btn-row" style="justify-content:flex-end">${buttons.map((btn, index) => `<button id="modal-btn-${index}" class="btn btn-${btn[1]}" ${buttonAttrs(btn[1])}>${escapeHtml(btn[0])}</button>`).join('')}</div></div>`;
+  buttons.forEach((btn, index) => document.getElementById('modal-btn-' + index).onclick = btn[2]);
+  wireButtonHovers();
+}
+
+function hideModal() {
+  document.getElementById('modal').className = 'modal';
+  document.getElementById('modal').innerHTML = '';
+}
+
+function showToast() {
+  const toast = document.getElementById('toast');
+  toast.className = 'toast show';
+  setTimeout(() => { toast.className = 'toast'; }, 2100);
+}
+
+setInterval(() => {
+  if (state.screen === 'frq' && state.currentTest && !state.grading) {
+    saveDraft();
+    showToast();
+  }
+}, 30000);
+
+function wireButtonHovers() {}
+
+function render() {
+  if (state.screen === 'home') renderHome();
+  if (state.screen === 'mcq') renderMcq();
+  if (state.screen === 'frq') renderFrq();
+  if (state.screen === 'results') renderResults();
+  updateTimerText();
+}
+
+window.addEventListener('beforeunload', () => {
+  pauseTimers();
+  if (state.currentTest) saveDraft();
+});
+
+loadDraft();
+renderHome();
+  </script>
+</body>
+</html>
