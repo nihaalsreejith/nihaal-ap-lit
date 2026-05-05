@@ -35,8 +35,7 @@ app.post('/api/generate-test', async (req, res) => {
           "stem": "question referencing a specific phrase or image from this passage",
           "choices": { "A": "...", "B": "...", "C": "...", "D": "..." },
           "correct": "A" | "B" | "C" | "D",
-          "explanation": "one sentence citing specific passage language",
-          "distractors": { "[wrong letters]": "specific passage-based reason this fails" }
+          "explanation": "one short phrase"
         }
       ]
     }
@@ -45,13 +44,12 @@ app.post('/api/generate-test', async (req, res) => {
 
 Requirements:
 - 5 sets total: sets 0 and 2 prose, sets 1 and 3 poetry, set 4 your choice
-- Prose: 400-600 words, 4 paragraphs, tonal shift between paragraphs 2 and 3
-- Poetry: 20-40 lines, contains a volta, grounded in concrete specific imagery
+- Prose: 250-350 words, 3 paragraphs, tonal shift between paragraphs 2 and 3
+- Poetry: 14-20 lines, contains a volta, grounded in concrete specific imagery
 - Exactly 11 questions per set, numbered 1-55 sequentially across all sets
 - Each stem must reference a specific line, phrase, or image from that passage — not generic
 - Distribute correct answers unevenly across A/B/C/D — never a repeating cycle
-- Distractors must be passage-specific, not generic filler phrases
-- Cover varied types per set: at least 2 tone/attitude, 2 imagery/figurative language, 1 structure/syntax, 1 theme, 1 diction; 4 your choice`;
+- Cover varied types per set: tone/attitude, imagery, figurative language, structure, theme, diction`;
 
   const frqPrompt = `Generate the 3 FRQ prompts for an AP Literature practice test. Return ONLY this JSON:
 {
@@ -63,8 +61,8 @@ Requirements:
 }
 
 Requirements:
-- Q1 passage is an original poem you write — 20-40 lines, contains a volta
-- Q2 passage is original prose fiction you write — 400-500 words
+- Q1 passage is an original poem you write — 14-20 lines, contains a volta
+- Q2 passage is original prose fiction you write — 250-350 words
 - Q3 has no passage — prompt must instruct student to select a work of literary merit of their own choice — never name a specific book`;
 
   try {
