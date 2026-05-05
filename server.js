@@ -67,7 +67,7 @@ Requirements:
         { role: 'user', content: userPrompt }
       ],
       response_format: { type: 'json_object' },
-      max_tokens: 8000,
+      max_tokens: 32000,
       temperature: 0.8
     });
 
